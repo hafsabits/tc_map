@@ -1,12 +1,23 @@
 services:
-  api:
+  backend:
     build: ./backend # points to go folder
+    volumes:
+      - ./backend:/app
     ports:
       - "8080:8080"
-  web:
+    environment:
+      - GO_ENV=development
+  frontend:
     build: ./frontend # points to react folder
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules # Prevents local node_modules from overwriting container
     ports:
-      - "3000:3000"  
+      - "3000:3000"
+    environment:
+      - WDS_SOCKET_PORT=0
+    stdin_open: true
+    tty: true
     
   cache:
     image: redis:alpine # will download image
