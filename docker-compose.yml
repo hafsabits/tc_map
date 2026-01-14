@@ -1,0 +1,12 @@
+services:
+  api:
+    build: ./backend # points to go folder
+    ports:
+      - "8080:8080"
+  web:
+    build: ./frontend # points to react folder
+    ports:
+      - "3000:3000"  
+    
+  cache:
+    image: redis:alpine # will download image
