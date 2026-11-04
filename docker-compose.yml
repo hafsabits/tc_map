@@ -14,6 +14,8 @@ services:
       - /app/node_modules # Prevents local node_modules from overwriting container
     ports:
       - "3000:3000"
+    env_file:
+      - .env
     environment:
       - WDS_SOCKET_PORT=0
     stdin_open: true

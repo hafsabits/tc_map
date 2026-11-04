@@ -1,12 +1,23 @@
+# Stage 1: Get the Air binary from the official image
+FROM cosmtrek/air:latest AS air-source
+
+# Stage 2: Build your actual environment
 FROM golang:1.23-alpine
-# install Air for hot reloading
-RUN go install github.com/air-verse/air@last 
-# set working dir
+
+# Install git (required for go mod download)
+RUN apk add --no-cache git
+
+# Copy the air binary from the first stage to your path
+COPY --from=air-source /go/bin/air /usr/local/bin/air
+
 WORKDIR /app
-# copy go mod files for faster builds
-COPY  go.mod go.sum ./
+
+# Copy dependency files first
+COPY go.mod go.* ./
 RUN go mod download
-# Copy the rest of the application
-COPY . . 
-# Use Air as the entry point for development
-CMD ["air", "-c", ".air.toml"] 
+
+# Copy the rest of your code
+COPY . .
+
+# Start Air
+ENTRYPOINT ["air"]
