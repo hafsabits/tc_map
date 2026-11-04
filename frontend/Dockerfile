@@ -1,11 +1,18 @@
-FROM node:22-alpine
+FROM node:20-alpine
+
 WORKDIR /app
-# Copy package files first to speed up builds (cache)
+
+# Copy package files first to cache dependencies
 COPY package*.json ./
-# install dependencies
+
+# Install dependencies
 RUN npm install
+
+# Copy the rest of your React code
 COPY . .
+
 # Expose the port React runs on
 EXPOSE 3000
-# Start the React development server
+
+# Start the development server
 CMD ["npm", "start"]
