@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"github.com/MobilityData/gtfs-realtime-bindings/golang/gtfs"
 	"google.golang.org/protobuf/proto"
+	"os"
 )
 
 
@@ -45,16 +46,20 @@ func getVehicles(w http.ResponseWriter, r *http.Request) {
 	}
 	results := make([]VehiclePoint, 0)
 
-	for _, entity := range feed.Entity {
-		vehicle := entity.Vehicle
-		if vehicle == nil || vehicle.Vehicle == nil || vehicle.Position == nil {
+	for _, entity := range feed.GetEntity() {
+		// vp is a VehiclePosition. Getters are safe to call even when a
+		// field is missing: they return "" or 0 instead of panicking.
+		vp := entity.GetVehicle()
+
+		id := vp.GetVehicle().GetId()
+		lat := vp.GetPosition().GetLatitude()
+		lon := vp.GetPosition().GetLongitude()
+
+		// Skip entries with missing data. A 0 latitude or longitude
+		// can't be a bus in Minnesota, so it means the field was absent.
+		if id == "" || lat == 0 || lon == 0 {
 			continue
 		}
-
-		// pointers in the generated structs, so we dereference them with *
-		id := *vehicle.Vehicle.Id
-		lat := *vehicle.Position.Latitude
-		lon := *vehicle.Position.Longitude
 
 		results = append(results, VehiclePoint{
 			ID:  id,
@@ -75,6 +80,12 @@ func main() {
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "TC Map API is Running")
 	})
-	fmt.Println("Backend starting on http://0.0.0.0:8080...")
-	log.Fatal(http.ListenAndServe("0.0.0.0:8080", nil))
+	// fmt.Println("Backend starting on http://0.0.0.0:8080...")
+	// log.Fatal(http.ListenAndServe("0.0.0.0:8080", nil))
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080" // local default
+	}
+	fmt.Println("Backend starting on port " + port)
+	log.Fatal(http.ListenAndServe("0.0.0.0:"+port, nil))
 }
