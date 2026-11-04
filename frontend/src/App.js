@@ -44,7 +44,7 @@ function App() {
 
     const fetchData = async () => {
       try {
-        const response = await fetch('http://localhost:8080/api/vehicles');
+        const response = await fetch(`${process.env.REACT_APP_API_URL}/api/vehicles`);
         const rawData = await response.json();
 
         // Transform Go JSON into Mapbox GeoJSON
